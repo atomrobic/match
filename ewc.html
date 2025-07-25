@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PUBG Mobile Esports World Cup 2025 - Standings & Matches</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-bg: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            --secondary-bg: rgba(26, 26, 46, 0.95);
+            --card-bg: rgba(30, 30, 30, 0.8);
+            --header-bg: rgba(20, 20, 40, 0.9);
+            --accent-primary: #ff6b35;
+            --accent-secondary: #f7931e;
+            --accent-tertiary: #ffc107;
+            --text-primary: #ffffff;
+            --text-secondary: #b8b8b8;
+            --text-muted: #888888;
+            --border-color: rgba(255, 255, 255, 0.1);
+            --shadow-light: rgba(255, 107, 53, 0.2);
+            --shadow-dark: rgba(0, 0, 0, 0.5);
+            --gradient-gold: linear-gradient(135deg, #ffd700 0%, #ffb347 100%);
+            --gradient-silver: linear-gradient(135deg, #c0c0c0 0%, #a8a8a8 100%);
+            --gradient-bronze: linear-gradient(135deg, #cd7f32 0%, #b8860b 100%);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--primary-bg);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: auto;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><g fill="none" fill-rule="evenodd"><g fill="%23ffffff" fill-opacity="0.02"><circle cx="7" cy="7" r="1"/><circle cx="27" cy="7" r="1"/><circle cx="47" cy="7" r="1"/><circle cx="7" cy="27" r="1"/><circle cx="27" cy="27" r="1"/><circle cx="47" cy="27" r="1"/><circle cx="7" cy="47" r="1"/><circle cx="27" cy="47" r="1"/><circle cx="47" cy="47" r="1"/></g></g></svg>');
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Header Styling */
+        .hero-section {
+            text-align: center;
+            padding: 60px 0 40px;
+            position: relative;
+        }
+
+        .hero-title {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 50%, var(--accent-tertiary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 20px;
+            text-shadow: 0 4px 20px rgba(255, 107, 53, 0.3);
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { filter: drop-shadow(0 0 20px rgba(255, 107, 53, 0.3)); }
+            to { filter: drop-shadow(0 0 30px rgba(255, 107, 53, 0.5)); }
+        }
+
+        .hero-subtitle {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin-bottom: 30px;
+            font-weight: 300;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 107, 53, 0.1), transparent);
+            transition: left 0.6s;
+        }
+
+        .stat-card:hover::before {
+            left: 100%;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 40px rgba(255, 107, 53, 0.2);
+            border-color: var(--accent-primary);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent-primary);
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Loading and Error States */
+        .loading, .error {
+            text-align: center;
+            padding: 60px 20px;
+            font-size: 1.2em;
+            border-radius: 16px;
+            backdrop-filter: blur(20px);
+            margin: 40px 0;
+        }
+
+        .loading {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+        }
+
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--accent-primary);
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: rgba(244, 67, 54, 0.1);
+            border: 1px solid rgba(244, 67, 54, 0.3);
+            color: #ff6b6b;
+        }
+
+        /* Section Styling */
+        .section {
+            margin-bottom: 60px;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            padding: 20px 0 10px;
+            border-bottom: 2px solid rgba(255, 107, 53, 0.2);
+        }
+
+        .section-title {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .section-icon {
+            font-size: 1.5rem;
+            color: var(--accent-primary);
+        }
+
+        /* Table Styling */
+        .table-container {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .table-container:hover {
+            box-shadow: 0 12px 48px rgba(255, 107, 53, 0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 16px 20px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background: var(--header-bg);
+            color: var(--accent-tertiary);
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        tbody tr {
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        tbody tr:hover {
+            background: rgba(255, 107, 53, 0.05);
+            transform: scale(1.01);
+        }
+
+        tbody tr:nth-child(even) {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        /* Rank styling with medals */
+        .rank-cell {
+            text-align: center;
+            font-weight: 700;
+            position: relative;
+        }
+
+        .rank-cell[data-rank="1"] {
+            background: var(--gradient-gold);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .rank-cell[data-rank="2"] {
+            background: var(--gradient-silver);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .rank-cell[data-rank="3"] {
+            background: var(--gradient-bronze);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .rank-cell[data-rank="1"]::before { content: "🥇 "; }
+        .rank-cell[data-rank="2"]::before { content: "🥈 "; }
+        .rank-cell[data-rank="3"]::before { content: "🥉 "; }
+
+        /* Team cell styling */
+        .team-cell {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-weight: 500;
+        }
+
+        .team-logo {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .team-logo:hover {
+            transform: scale(1.1);
+            border-color: var(--accent-primary);
+        }
+
+        .team-name {
+            font-size: 1rem;
+            color: var(--text-primary);
+        }
+
+        /* Score and points styling */
+        .score-cell, .points-cell {
+            font-weight: 600;
+            font-size: 1.1rem;
+            text-align: center;
+        }
+
+        .score-cell {
+            color: var(--accent-primary);
+        }
+
+        .points-cell {
+            color: var(--accent-secondary);
+        }
+
+        /* Match Details Styling */
+        .matches-container {
+            display: grid;
+            gap: 30px;
+        }
+
+        .match-series {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .series-header {
+            background: var(--header-bg);
+            padding: 20px 25px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .series-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--accent-tertiary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .series-meta {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Collapsible Match Styling */
+        .collapsible {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.03);
+            border: none;
+            border-bottom: 1px solid var(--border-color);
+            padding: 16px 25px;
+            text-align: left;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.3s ease;
+        }
+
+        .collapsible:hover {
+            background: rgba(255, 107, 53, 0.1);
+            color: var(--accent-primary);
+        }
+
+        .collapsible.active {
+            background: rgba(255, 107, 53, 0.15);
+            color: var(--accent-primary);
+        }
+
+        .collapsible-icon {
+            transition: transform 0.3s ease;
+        }
+
+        .collapsible.active .collapsible-icon {
+            transform: rotate(180deg);
+        }
+
+        .match-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .match-content.active {
+            max-height: 1000px;
+        }
+
+        .match-table-wrapper {
+            padding: 0;
+            overflow-x: auto;
+        }
+
+        /* Mobile Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 15px;
+            }
+
+            .hero-section {
+                padding: 40px 0 30px;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 15px;
+            }
+
+            .stat-card {
+                padding: 15px;
+            }
+
+            .stat-value {
+                font-size: 1.5rem;
+            }
+
+            .section-title {
+                font-size: 1.5rem;
+            }
+
+            th, td {
+                padding: 12px 15px;
+                font-size: 0.9rem;
+            }
+
+            .team-logo {
+                width: 32px;
+                height: 32px;
+            }
+
+            .team-cell {
+                gap: 10px;
+            }
+
+            .collapsible {
+                padding: 12px 20px;
+                font-size: 0.9rem;
+            }
+
+            .series-header {
+                padding: 15px 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .table-container {
+                border-radius: 12px;
+                margin: 0 -10px;
+            }
+
+            /* Mobile table cards */
+            .mobile-table table,
+            .mobile-table thead,
+            .mobile-table tbody,
+            .mobile-table th,
+            .mobile-table td,
+            .mobile-table tr {
+                display: block;
+            }
+
+            .mobile-table thead {
+                display: none;
+            }
+
+            .mobile-table tr {
+                background: rgba(255, 255, 255, 0.02);
+                border: 1px solid var(--border-color);
+                border-radius: 12px;
+                margin-bottom: 15px;
+                padding: 15px;
+                position: relative;
+            }
+
+            .mobile-table td {
+                border: none;
+                padding: 8px 0;
+                position: relative;
+                padding-left: 45%;
+                text-align: right;
+            }
+
+            .mobile-table td::before {
+                content: attr(data-label) ": ";
+                position: absolute;
+                left: 0;
+                width: 40%;
+                text-align: left;
+                font-weight: 600;
+                color: var(--accent-tertiary);
+            }
+
+            .mobile-table .team-cell {
+                justify-content: flex-end;
+            }
+
+            .mobile-table .team-logo {
+                width: 28px;
+                height: 28px;
+            }
+        }
+
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent-primary);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-secondary);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Hero Section -->
+        <div class="hero-section">
+            <h1 class="hero-title">
+                <i class="fas fa-trophy"></i>
+                PUBG Mobile Esports World Cup 2025
+            </h1>
+            <p class="hero-subtitle">Live Tournament Standings & Match Results</p>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="total-teams">--</div>
+                    <div class="stat-label">Teams</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="total-matches">--</div>
+                    <div class="stat-label">Matches</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="prize-pool">$2M</div>
+                    <div class="stat-label">Prize Pool</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="tournament-status">Live</div>
+                    <div class="stat-label">Status</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading/Error Status -->
+        <div id="status" class="loading">
+            <i class="fas fa-spinner fa-spin"></i>
+            Loading tournament data...
+        </div>
+        
+        <!-- Overall Standings Section -->
+        <div id="overall-section" class="section" style="display: none;">
+            <div class="section-header">
+                <i class="fas fa-medal section-icon"></i>
+                <h2 class="section-title">Overall Standings</h2>
+            </div>
+            <div class="table-container">
+                <table id="standings-table">
+                    <thead>
+                        <tr>
+                            <th><i class="fas fa-hashtag"></i> Rank</th>
+                            <th><i class="fas fa-users"></i> Team</th>
+                            <th><i class="fas fa-target"></i> Score</th>
+                            <th><i class="fas fa-star"></i> Points</th>
+                        </tr>
+                    </thead>
+                    <tbody id="standings-body">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Match Details Section -->
+        <div id="matches-section" class="section" style="display: none;">
+            <div class="section-header">
+                <i class="fas fa-gamepad section-icon"></i>
+                <h2 class="section-title">Match Details</h2>
+            </div>
+            <div id="matches-container" class="matches-container">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Configuration ---
+        const LOGO_BASE_URL = "https://example.com/logos/"; // <-- REPLACE THIS URL
+
+        // --- Utility Functions ---
+        function escapeHtml(text) {
+            if (!text) return '';
+            return text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        function updateStats(teamsCount, matchesCount) {
+            document.getElementById('total-teams').textContent = teamsCount;
+            document.getElementById('total-matches').textContent = matchesCount;
+        }
+
+        function addMobileTableClass() {
+            if (window.innerWidth <= 480) {
+                document.querySelectorAll('.table-container').forEach(container => {
+                    container.classList.add('mobile-table');
+                });
+            } else {
+                document.querySelectorAll('.table-container').forEach(container => {
+                    container.classList.remove('mobile-table');
+                });
+            }
+        }
+
+        // --- Data Processing & Display ---
+        async function loadData() {
+            const statusDiv = document.getElementById('status');
+            const overallSection = document.getElementById('overall-section');
+            const matchesSection = document.getElementById('matches-section');
+            const standingsBody = document.getElementById('standings-body');
+            const matchesContainer = document.getElementById('matches-container');
+
+            try {
+                statusDiv.innerHTML = '<i class="fas fa-download"></i> Fetching match data...';
+                const response = await fetch('match.json');
+                if (!response.ok) {
+                    throw new Error(`Failed to load match.json: ${response.status} ${response.statusText}`);
+                }
+                const jsonData = await response.json();
+                statusDiv.innerHTML = '<i class="fas fa-cog fa-spin"></i> Processing data...';
+
+                // --- 1. Extract Overall Standings and Build Team Lookup ---
+                const teamsMap = new Map();
+                const teamLookup = new Map();
+
+                const matchSeriesItems = jsonData.data?.matchSeries?.items || [];
+                
+                const overallStandingsItems = matchSeriesItems.filter(item => 
+                    item.metadata?.some(meta => meta.type === "GROUP") && item.contestants && item.contestants.length > 0
+                );
+
+                if (overallStandingsItems.length === 0) {
+                    console.warn("No specific GROUP standings item found, using first item.");
+                    overallStandingsItems.push(matchSeriesItems[0]);
+                }
+
+                // Process overall standings items to get team data
+                overallStandingsItems.forEach(seriesItem => {
+                    const contestants = seriesItem.contestants || [];
+                    contestants.forEach(contestant => {
+                        const teamData = contestant.team;
+                        if (teamData && teamData.id) {
+                            const teamId = teamData.id;
+                            let logoId = null;
+                            if (teamData.images && Array.isArray(teamData.images)) {
+                                const transparentLogo = teamData.images.find(img => img.type === "logo_transparent");
+                                logoId = transparentLogo ? transparentLogo.id : (teamData.images[0]?.id || null);
+                            }
+
+                            if (!teamLookup.has(teamId) || (teamData.name && !teamLookup.get(teamId).name.startsWith("Team "))) {
+                                 teamLookup.set(teamId, {
+                                     name: teamData.name || `Team ${teamId.substring(0, 8)}`,
+                                     logoId: logoId
+                                 });
+                            }
+
+                            if (teamsMap.has(teamId)) {
+                                const existingTeam = teamsMap.get(teamId);
+                                existingTeam.score += contestant.score !== undefined ? contestant.score : 0;
+                                existingTeam.points += contestant.points !== undefined ? contestant.points : 0;
+                                existingTeam.rank = contestant.rank !== undefined ? contestant.rank : existingTeam.rank;
+                                if (teamData.name && !existingTeam.name.startsWith("Team ")) {
+                                    existingTeam.name = teamData.name;
+                                }
+                            } else {
+                                teamsMap.set(teamId, {
+                                    id: teamId,
+                                    name: teamData.name || `Team ${teamId.substring(0, 8)}`,
+                                    logoId: logoId,
+                                    rank: contestant.rank !== undefined ? contestant.rank : null,
+                                    score: contestant.score !== undefined ? contestant.score : 0,
+                                    points: contestant.points !== undefined ? contestant.points : 0
+                                });
+                            }
+                        }
+                    });
+                });
+
+                if (teamsMap.size === 0) {
+                    throw new Error("No overall team standings data found.");
+                }
+
+                // Sort overall standings
+                const teamsArray = Array.from(teamsMap.values());
+                teamsArray.sort((a, b) => {
+                    if (a.rank != null && b.rank != null && a.rank !== b.rank) {
+                        return a.rank - b.rank;
+                    }
+                    if (b.score !== a.score) return b.score - a.score;
+                    return b.points - a.points;
+                });
+
+                // Count total matches
+                let totalMatches = 0;
+                matchSeriesItems.forEach(seriesItem => {
+                    totalMatches += (seriesItem.matches || []).length;
+                });
+
+                // Update stats
+                updateStats(teamsArray.length, totalMatches);
+
+                // Generate Overall Standings Table
+                let standingsHTML = '';
+                teamsArray.forEach((team, index) => {
+                    const displayRank = team.rank !== null ? team.rank : (index + 1);
+                    const logoUrl = team.logoId ? `${LOGO_BASE_URL}${team.logoId}.png` : '';
+
+                    standingsHTML += `
+                        <tr>
+                            <td class="rank-cell" data-label="Rank" data-rank="${displayRank}">${displayRank}</td>
+                            <td class="team-cell" data-label="Team">
+                                ${logoUrl ? `<img src="${logoUrl}" alt="${team.name} Logo" class="team-logo" onerror="this.onerror=null;this.style.display='none';">` : `<div class="team-logo" style="background: linear-gradient(135deg, #ff6b35, #f7931e); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 0.8rem;">${team.name.charAt(0)}</div>`}
+                                <span class="team-name">${escapeHtml(team.name)}</span>
+                            </td>
+                            <td class="score-cell" data-label="Score">${team.score.toLocaleString()}</td>
+                            <td class="points-cell" data-label="Points">${team.points.toLocaleString()}</td>
+                        </tr>
+                    `;
+                });
+                standingsBody.innerHTML = standingsHTML;
+                overallSection.style.display = 'block';
+
+                // --- 2. Extract and Display Match Details ---
+                let matchesHTML = '';
+                matchSeriesItems.forEach((seriesItem, seriesIndex) => {
+                    let seriesName = seriesItem.tournament?.name || `Series ${seriesIndex + 1}`;
+                    const roundMeta = seriesItem.metadata?.find(m => m.type === "ROUND");
+                    if (roundMeta) seriesName = roundMeta.name;
+
+                    const matches = seriesItem.matches || [];
+                    
+                    if (matches.length > 0) {
+                        matchesHTML += `
+                            <div class="match-series">
+                                <div class="series-header">
+                                    <div class="series-title">
+                                        <i class="fas fa-layer-group"></i>
+                                        ${escapeHtml(seriesName)}
+                                    </div>
+                                    <div class="series-meta">${matches.length} matches</div>
+                                </div>
+                        `;
+
+                        matches.forEach((match, matchIndex) => {
+                            const mapName = match.gameMap?.name || 'Unknown Map';
+                            const matchTitle = `Match ${matchIndex + 1} - ${mapName}`;
+
+                            matchesHTML += `
+                                <button type="button" class="collapsible">
+                                    <span><i class="fas fa-map-marker-alt"></i> ${escapeHtml(matchTitle)}</span>
+                                    <i class="fas fa-chevron-down collapsible-icon"></i>
+                                </button>
+                                <div class="match-content">
+                                    <div class="match-table-wrapper">
+                                        <div class="table-container">
+                                            <table>
+                                                <thead>
+                                                    <tr>
+                                                        <th><i class="fas fa-hashtag"></i> Rank</th>
+                                                        <th><i class="fas fa-users"></i> Team</th>
+                                                        <th><i class="fas fa-target"></i> Score</th>
+                                                        <th><i class="fas fa-star"></i> Points</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                            `;
+
+                            const contestants = match.contestants || [];
+                            if (contestants.length === 0) {
+                                matchesHTML += `<tr><td colspan="4" style="text-align:center; color: var(--text-secondary); padding: 40px;"><i class="fas fa-exclamation-triangle"></i> No data available for this match.</td></tr>`;
+                            } else {
+                                // Sort match contestants
+                                const sortedContestants = [...contestants].sort((a, b) => {
+                                    if (a.rank != null && b.rank != null && a.rank !== b.rank) {
+                                        return a.rank - b.rank;
+                                    }
+                                    if ((b.score || 0) !== (a.score || 0)) {
+                                        return (b.score || 0) - (a.score || 0);
+                                    }
+                                    return (b.points || 0) - (a.points || 0);
+                                });
+
+                                sortedContestants.forEach((contestant, contestantIndex) => {
+                                    const teamId = contestant.team?.id;
+                                    if (!teamId) return;
+
+                                    const teamInfo = teamLookup.get(teamId);
+                                    const teamName = teamInfo ? teamInfo.name : `Team ${teamId.substring(0, 8)}`;
+                                    const logoId = teamInfo ? teamInfo.logoId : null;
+                                    const logoUrl = logoId ? `${LOGO_BASE_URL}${logoId}.png` : '';
+
+                                    const displayRank = contestant.rank !== undefined && contestant.rank !== null ? contestant.rank : (contestantIndex + 1);
+
+                                    matchesHTML += `
+                                        <tr>
+                                            <td class="rank-cell" data-label="Rank" data-rank="${displayRank}">${displayRank}</td>
+                                            <td class="team-cell" data-label="Team">
+                                                ${logoUrl ? `<img src="${logoUrl}" alt="${teamName} Logo" class="team-logo" onerror="this.onerror=null;this.style.display='none';">` : `<div class="team-logo" style="background: linear-gradient(135deg, #ff6b35, #f7931e); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 0.8rem;">${teamName.charAt(0)}</div>`}
+                                                <span class="team-name">${escapeHtml(teamName)}</span>
+                                            </td>
+                                            <td class="score-cell" data-label="Score">${(contestant.score || 0).toLocaleString()}</td>
+                                            <td class="points-cell" data-label="Points">${(contestant.points || 0).toLocaleString()}</td>
+                                        </tr>
+                                    `;
+                                });
+                            }
+
+                            matchesHTML += `
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        });
+
+                        matchesHTML += `</div>`;
+                    }
+                });
+
+                if (matchesHTML) {
+                    matchesContainer.innerHTML = matchesHTML;
+                    matchesSection.style.display = 'block';
+
+                    // Add event listeners for collapsible match details
+                    const collapsibles = document.querySelectorAll(".collapsible");
+                    collapsibles.forEach(collapsible => {
+                        collapsible.addEventListener("click", function() {
+                            this.classList.toggle("active");
+                            const content = this.nextElementSibling;
+                            
+                            if (content.classList.contains("active")) {
+                                content.classList.remove("active");
+                                content.style.maxHeight = null;
+                            } else {
+                                content.classList.add("active");
+                                content.style.maxHeight = content.scrollHeight + "px";
+                            }
+                        });
+                    });
+                } else {
+                    matchesContainer.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--text-secondary);"><i class="fas fa-search"></i> No match details found.</div>';
+                    matchesSection.style.display = 'block';
+                }
+
+                // Apply mobile table styling if needed
+                addMobileTableClass();
+
+                // Hide loading status
+                statusDiv.style.display = 'none';
+
+            } catch (error) {
+                console.error("Error loading or processing data:", error);
+                statusDiv.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Error: ${error.message}`;
+                statusDiv.className = "error";
+                overallSection.style.display = 'none';
+                matchesSection.style.display = 'none';
+            }
+        }
+
+        // --- Event Listeners ---
+        window.addEventListener('DOMContentLoaded', (event) => {
+            loadData();
+        });
+
+        window.addEventListener('resize', () => {
+            addMobileTableClass();
+        });
+
+        // Add smooth scrolling to sections
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add intersection observer for animations
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -100px 0px'
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.animationDelay = '0s';
+                        entry.target.style.animationPlayState = 'running';
+                    }
+                });
+            }, observerOptions);
+
+            // Observe all sections
+            document.querySelectorAll('.section').forEach(section => {
+                observer.observe(section);
+            });
+        });
+    </script>
+</body>
+</html>
